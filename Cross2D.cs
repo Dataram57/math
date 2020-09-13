@@ -5,8 +5,34 @@ public class Cross2D
     //Vector2.positiveInfinity      -- they lay on themselves
     //Vector2.negativeInfinity      -- nowhere
 
+    
+    static float ra= 0f;        
+    static float rb=0f;
+    static Vector2 rx, ry;
+
+
+    public static void SetLine(Vector2 x, Vector2 y)
+    {
+        Vector2 Delta1 = x - y;
+
+        rx = x;
+        ry = y;
+
+        if (Delta1.x != 0)
+        {
+            ra = Delta1.y / Delta1.x;
+            rb = x.y - ra * x.x;
+        }
+        else
+        {
+            ra = float.PositiveInfinity;       //i will use it to detect if it is a straight line
+            rb = x.x;
+        }
+    }
+
     public static Vector2 CrossLines(Vector2 x,Vector2 y, Vector2 z, Vector2 w)
     {
+       
         Vector2 Delta1 = x - y;
         Vector2 Delta2 = z - w;
         float a1=0f;
@@ -15,6 +41,8 @@ public class Cross2D
         float b2 = 0f;
         bool straight1=false;
         bool straight2=false;
+
+
 
         //straight line
         if (Delta1.x != 0)
@@ -58,10 +86,66 @@ public class Cross2D
         return cross;
     }
 
+    public static Vector2 CrossLines(Vector2 z, Vector2 w)
+    {
+
+       
+        Vector2 Delta2 = z - w;
+        float a2 = 0f;
+        float b2 = 0f;
+        bool straight1 = float.IsPositiveInfinity(rb);
+        bool straight2 = false;
+
+
+
+        //straight line
+
+        if (Delta2.x != 0)
+        {
+            a2 = Delta2.y / Delta2.x;
+            b2 = z.y - a2 * z.x;
+        }
+        else straight2 = true;
+
+        Vector2 cross = new Vector2();
+
+        if (straight1 && straight2)
+        {
+            if (rb == z.x) return Vector2.positiveInfinity;
+            else return Vector2.negativeInfinity;
+        }
+        else if (straight1)
+        {
+            cross.x = rb;
+            cross.y = rb * a2 + b2;
+        }
+        else if (straight2)
+        {
+            cross.x = z.x;
+            cross.y = z.x * ra + rb;
+        }
+        else
+        {
+            cross.x = (b2 - rb) / (ra - a2);
+            cross.y = ra * cross.x + rb;
+        }
+
+
+        return cross;
+    }
+
     public static Vector2 CrossLineSegments(Vector2 x, Vector2 y, Vector2 z, Vector2 w)
     {
         Vector2 cross=CrossLines(x, y, z, w);
         if (IsPointInTheBox(x, y, cross) && IsPointInTheBox(z, w, cross)) return cross;
+        if (cross == Vector2.positiveInfinity) return Vector2.positiveInfinity;
+        return Vector2.negativeInfinity;
+    }
+
+    public static Vector2 CrossLineSegments( Vector2 z, Vector2 w)
+    {
+        Vector2 cross = CrossLines(z, w);
+        if (IsPointInTheBox(rx, ry, cross) && IsPointInTheBox(z, w, cross)) return cross;
         if (cross == Vector2.positiveInfinity) return Vector2.positiveInfinity;
         return Vector2.negativeInfinity;
     }
